@@ -1,6 +1,7 @@
 import "./App.css";
 import EmployeeAPI from "./api/service";
 import Table from "./Table";
+import Form from "./Form";
 import { useState } from "react";
 
 const initialEmployees = EmployeeAPI.all();
@@ -23,6 +24,7 @@ function App() {
 
   return (
     <div className="App">
+      <Form handleSubmit={addEmployee} inEmployee={{ name: "", surname: "", age: "" }} />
       <Table employees={employees} delEmployee={delEmp} />
     </div>
   );
