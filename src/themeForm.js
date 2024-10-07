@@ -10,6 +10,22 @@ const theme = createTheme({
     },
   },
   components: {
+    MuiBox: {
+      styleOverrides: {
+        root: {
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem',
+          maxWidth: '100%',
+          margin: '0 auto',
+          padding: '1rem',
+          border: '1px solid #c68282',
+          borderRadius: '8px',
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+          backgroundColor: '#aa2222',
+        },
+      },
+    },
     MuiButton: {
       styleOverrides: {
         root: {

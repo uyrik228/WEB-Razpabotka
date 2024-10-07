@@ -23,18 +23,7 @@ const Form = ({ handleSubmit, inEmployee }) => {
       <Box
         component="form"
         onSubmit={onSubmit}
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '1rem',
-          maxWidth: '100%',
-          margin: '0 auto',
-          padding: '1rem',
-          border: '1px solid #c68282',
-          borderRadius: '8px',
-          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-          backgroundColor: '#aa2222',
-        }}
+        sx={{ ...theme.components.MuiBox.styleOverrides.root }}
       >
         <TextField
           label="Name"
