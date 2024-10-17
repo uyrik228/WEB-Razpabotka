@@ -2,6 +2,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TextField, Button, Container, Typography, Box } from "@mui/material";
 
+const users = [
+  { username: "admin", password: "password" },
+  { username: "user1", password: "password1" },
+  // Добавьте больше пользователей по необходимости
+];
+
 function Login({ setAuth }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -9,9 +15,9 @@ function Login({ setAuth }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Простая проверка для примера
-    if (username === "admin" && password === "password") {
-      setAuth(true);
+    const user = users.find((user) => user.username === username && user.password === password);
+    if (user) {
+      setAuth(username);
       navigate("/");
     } else {
       alert("Неверные данные для входа");
