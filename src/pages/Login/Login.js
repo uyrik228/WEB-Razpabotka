@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TextField, Button, Container, Typography, Box } from "@mui/material";
+import {jwtDecode} from 'jwt-decode';
+import axios from 'axios';
 
 const users = [
   { username: "admin", password: "password" },
@@ -13,16 +15,41 @@ function Login({ setAuth }) {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const user = users.find((user) => user.username === username && user.password === password);
-    if (user) {
-      setAuth(username);
-      navigate("/");
-    } else {
-      alert("Неверные данные для входа");
-    }
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+  //   const user = users.find((user) => user.username === username && user.password === password);
+  //   if (user) {
+  //     setAuth(username);
+  //     navigate("/");
+  //   } else {
+  //     alert("Неверные данные для входа");
+  //   }
+  // };
+  const handleSubmit = async (e) => {
+      e.preventDefault();
+      try {
+          const response = await axios.post('http://localhost:8080/auth/sign-in', {
+              username: username,
+              password: password
+          });
+          if (response.data.token) {
+              localStorage.setItem('token', response.data.token); // Сохраняем токен в localStorage
+              localStorage.setItem('username', username);
+              const decodedToken = jwtDecode(response.data.token);
+              const role = decodedToken.role;
+              localStorage.setItem('role', role);
+              setAuth(response.data.token); // Обновляем состояние авторизации
+              navigate("/");
+          } else {
+              alert("Неверные данные для входа");
+          }
+      } catch (error) {
+          console.error("Ошибка при авторизации:", error);
+          alert("Произошла ошибка при авторизации" + error);
+      }
   };
+  
+
 
   return (
     <Container maxWidth="sm">
