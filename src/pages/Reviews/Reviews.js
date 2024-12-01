@@ -24,7 +24,7 @@ const Reviews = () => {
 
     return (
         <div>
-            {/* {isAdmin && <Form handleSubmit={handleSubmit} initialProduct={initialProduct} />} */}
+            <Form handleSubmit={handleSubmit} />
             <ReviewTable reviews={reviews} delReview={delReview} isAdmin={isAdmin} />
         </div>
     );

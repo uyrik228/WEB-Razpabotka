@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
 const ProductTable = ({ isAdmin, delProduct }) => {
   const [products, setProducts] = useState([]);
+  const [editProduct, setEditProduct] = useState(null);
   const theme = useTheme();
 
   useEffect(() => {
     const fetchProducts = async () => {
       const token = localStorage.getItem('token');
       try {
-        const response = await axios.get('http://localhost:8080/api/Products', {
+        const response = await axios.get('http://localhost:8081/api/Products', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -28,7 +29,7 @@ const ProductTable = ({ isAdmin, delProduct }) => {
   const handleDelete = async (id) => {
     const token = localStorage.getItem('token');
     try {
-      await axios.delete(`http://localhost:8080/api/Products/${id}`, {
+      await axios.delete(`http://localhost:8081/api/Products/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -40,12 +41,30 @@ const ProductTable = ({ isAdmin, delProduct }) => {
   };
 
   const handleEdit = (product) => {
-    // Здесь вы можете открыть модальное окно или форму для редактирования
-    // Например, можно использовать состояние для отображения формы с предзаполненными данными
-    console.log('Редактировать продукт:', product);
-};
+    setEditProduct(product);
+  };
 
-return (
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditProduct((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditSave = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      await axios.put(`http://localhost:8081/api/Products/update`, editProduct, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      setProducts((prev) => prev.map((p) => (p.id === editProduct.id ? editProduct : p)));
+      setEditProduct(null);
+    } catch (error) {
+      console.error("Ошибка при сохранении изменений:", error);
+    }
+  };
+
+  return (
     <TableContainer component={Paper} style={{ backgroundColor: theme.palette.background.paper }}>
       <Table>
         <TableHead>
@@ -89,8 +108,60 @@ return (
           ))}
         </TableBody>
       </Table>
+
+      {editProduct && (
+        <Dialog open={Boolean(editProduct)} onClose={() => setEditProduct(null)}>
+          <DialogTitle>Редактировать продукт</DialogTitle>
+          <DialogContent>
+            <TextField
+              margin="dense"
+              label="Описание"
+              type="text"
+              fullWidth
+              name="description"
+              value={editProduct.description}
+              onChange={handleEditChange}
+            />
+            <TextField
+              margin="dense"
+              label="Товар"
+              type="text"
+              fullWidth
+              name="name"
+              value={editProduct.name}
+              onChange={handleEditChange}
+            />
+            <TextField
+              margin="dense"
+              label="Цена"
+              type="number"
+              fullWidth
+              name="price"
+              value={editProduct.price}
+              onChange={handleEditChange}
+            />
+            <TextField
+              margin="dense"
+              label="Количество"
+              type="number"
+              fullWidth
+              name="quantity"
+              value={editProduct.quantity}
+              onChange={handleEditChange}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setEditProduct(null)} color="primary">
+              Отмена
+            </Button>
+            <Button onClick={handleEditSave} color="primary">
+              Сохранить
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </TableContainer>
-);
+  );
 };
 
 export default ProductTable;

@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { TextField, Button, Container, Typography, Box } from "@mui/material";
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 
 const users = [
@@ -26,29 +26,29 @@ function Login({ setAuth }) {
   //   }
   // };
   const handleSubmit = async (e) => {
-      e.preventDefault();
-      try {
-          const response = await axios.post('http://localhost:8080/auth/sign-in', {
-              username: username,
-              password: password
-          });
-          if (response.data.token) {
-              localStorage.setItem('token', response.data.token); // Сохраняем токен в localStorage
-              localStorage.setItem('username', username);
-              const decodedToken = jwtDecode(response.data.token);
-              const role = decodedToken.role;
-              localStorage.setItem('role', role);
-              setAuth(response.data.token); // Обновляем состояние авторизации
-              navigate("/");
-          } else {
-              alert("Неверные данные для входа");
-          }
-      } catch (error) {
-          console.error("Ошибка при авторизации:", error);
-          alert("Произошла ошибка при авторизации" + error);
+    e.preventDefault();
+    try {
+      const response = await axios.post('http://localhost:8081/auth/sign-in', {
+        username: username,
+        password: password
+      });
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token); // Сохраняем токен в localStorage
+        localStorage.setItem('username', username);
+        const decodedToken = jwtDecode(response.data.token);
+        const role = decodedToken.role;
+        localStorage.setItem('role', role);
+        setAuth(response.data.token); // Обновляем состояние авторизации
+        navigate("/");
+      } else {
+        alert("Неверные данные для входа");
       }
+    } catch (error) {
+      console.error("Ошибка при авторизации:", error);
+      alert("Произошла ошибка при авторизации" + error);
+    }
   };
-  
+
 
 
   return (
@@ -93,6 +93,9 @@ function Login({ setAuth }) {
         >
           Войти
         </Button>
+        <Typography variant="body2">
+          Если вы еще не зарегистрированы, <Link to="/register">зарегистрируйтесь здесь</Link>.
+        </Typography>
       </Box>
     </Container>
   );

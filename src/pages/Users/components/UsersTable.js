@@ -11,7 +11,7 @@ const UsersTable = ({ isAdmin, delUser }) => {
     const fetchUsers = async () => {
       const token = localStorage.getItem('token');
       try {
-        const response = await axios.get('http://localhost:8080/api/Users', {
+        const response = await axios.get('http://localhost:8081/api/Users', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -28,7 +28,7 @@ const UsersTable = ({ isAdmin, delUser }) => {
   const handleDelete = async (id) => {
     const token = localStorage.getItem('token');
     try {
-      await axios.delete(`http://localhost:8080/api/Users/${id}`, {
+      await axios.delete(`http://localhost:8081/api/Users/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

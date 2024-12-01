@@ -6,6 +6,7 @@ import Products from "./pages/Products/Products";
 import Users from "./pages/Users/Users";
 import Navbar from "./Navbar";
 import Reviews from "./pages/Reviews/Reviews";
+import Registration from "./pages/Login/Registration";
 
 const AppRouter = ({ isAuthenticated, handleAuth }) => {
   const [currentUser, setCurrentUser] = useState('');
@@ -22,6 +23,8 @@ const AppRouter = ({ isAuthenticated, handleAuth }) => {
       <Navbar />
       <Routes>
         <Route path="/login" element={<Login setAuth={handleAuth} />} />
+        <Route path="/register" element={<Registration/>}/>
+        
         <Route path="/Products" element={<Products />} />
         <Route path="/Users" element={<Users />} />
         <Route path="/Reviews" element={<Reviews />} />
