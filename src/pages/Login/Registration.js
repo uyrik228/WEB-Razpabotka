@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TextField, Button, Container, Typography, Box } from '@mui/material';
-import axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
+import { register } from '../../redux/actions/authActions';
 
 const Registration = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +12,10 @@ const Registration = () => {
     confirmPassword: ''
   });
 
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const error = useSelector((state) => state.auth.error); // Получаем ошибку из состояния
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -18,7 +23,6 @@ const Registration = () => {
       [name]: value
     });
   };
-  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,12 +31,11 @@ const Registration = () => {
       return;
     }
 
-    try {
-      const response = await axios.post('http://localhost:8081/auth/sign-up', formData);
-      console.log('Регистрация успешна:', response.data);
+    await dispatch(register(formData));
+    if (!error) {
       navigate("/login");
-    } catch (error) {
-      console.error('Ошибка при регистрации:', error);
+    } else {
+      alert(error); // Показываем ошибку, если она есть
     }
   };
 
@@ -66,7 +69,7 @@ const Registration = () => {
             margin="normal"
             required
             fullWidth
-            id="email"
+            id ="email"
             label="Email"
             name="email"
             autoComplete="email"

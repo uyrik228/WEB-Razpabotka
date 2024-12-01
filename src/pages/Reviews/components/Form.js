@@ -1,22 +1,26 @@
 import React, { useState, useEffect } from "react";
-import axios from 'axios';
 import { TextField, Button, Box, MenuItem, Select, InputLabel, FormControl, Grid } from '@mui/material';
-import {jwtDecode} from 'jwt-decode';
+import { useDispatch } from 'react-redux';
+import { addReview } from '../../../redux/actions/reviewsActions'; // Импортируем действие для добавления отзыва
+import { jwtDecode } from 'jwt-decode';
+import axios from 'axios';
 
 const ReviewForm = ({ handleSubmit }) => {
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState('');
   const [comment, setComment] = useState('');
   const [rating, setRating] = useState(1);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const token = localStorage.getItem('token');
         const response = await axios.get('http://localhost:8081/api/Products', {
-            headers: {
+          headers: {
             'Authorization': `Bearer ${token}`
-          }});
+          }
+        });
         setProducts(response.data);
       } catch (error) {
         console.error('Ошибка при получении продуктов:', error);
@@ -65,15 +69,9 @@ const ReviewForm = ({ handleSubmit }) => {
         rating: rating,
         date: new Date().toISOString(),
       };
-      console.log(reviewData);
 
-      const response = await axios.post('http://localhost:8081/api/Reviews/create', reviewData, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      console.log('Отзыв добавлен:', response.data);
-      handleSubmit(response.data);
+      dispatch(addReview(reviewData)); // Используем Redux для добавления отзыва
+      handleSubmit(reviewData); // Вызываем функцию обратного вызова
 
       setSelectedProduct('');
       setComment('');
@@ -121,7 +119,6 @@ const ReviewForm = ({ handleSubmit }) => {
             value={rating}
             onChange={handleRatingChange}
             required
-            //variant="outlined"
             size="small"
             inputProps={{ min: 1, max: 10 }}
           />

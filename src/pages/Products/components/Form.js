@@ -1,11 +1,13 @@
 import React, { useState } from "react";
-import axios from 'axios';
 import { TextField, Button, Box } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { useDispatch } from 'react-redux';
+import { addProduct } from '../../../redux/actions/productsActions';
 
-const ProductForm = ({ handleSubmit, initialProduct }) => {
+const ProductForm = ({ initialProduct }) => {
   const [product, setProduct] = useState(initialProduct);
   const theme = useTheme();
+  const dispatch = useDispatch();
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -14,15 +16,8 @@ const ProductForm = ({ handleSubmit, initialProduct }) => {
 
   const onSubmit = async (event) => {
     event.preventDefault();
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:8080/api/Products/create', product, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      console.log('Product added:', response.data);
-      handleSubmit(product);
+ try {
+      await dispatch(addProduct(product));
       setProduct(initialProduct);
     } catch (error) {
       console.error('Ошибка при добавлении продукта:', error);

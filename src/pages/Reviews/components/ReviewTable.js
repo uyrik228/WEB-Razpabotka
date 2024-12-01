@@ -1,77 +1,31 @@
 import React, { useEffect, useState } from "react";
-import axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchReviews, fetchUserReviews, deleteReview } from '../../../redux/actions/reviewsActions'; // Импортируем действия
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import {jwtDecode} from 'jwt-decode';
 
-const ReviewTable = ({ isAdmin, delReview }) => {
-  const [reviews, setReviews] = useState([]);
+const ReviewTable = ({ isAdmin }) => {
+  const dispatch = useDispatch();
+  const { reviews, loading, error } = useSelector((state) => state.reviews);
+  const { currentUser  } = useSelector((state) => state.auth); // Предполагаем, что ID пользователя хранится здесь
   const [viewMode, setViewMode] = useState('all'); // 'all' или 'my'
   const theme = useTheme();
 
   useEffect(() => {
-    const fetchReviews = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) return; // Если токена нет, выходим
-      const decodedToken = jwtDecode(token);
-      const username = decodedToken.sub; // Предполагается, что идентификатор пользователя хранится в поле 'sub'
-
-      try {
-        let response;
-        if (viewMode === 'my') {
-          const userResponse = await axios.get(`http://localhost:8081/api/Users/name/${username}`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-
-          const userId = userResponse.data.id;
-          response = await axios.get(`http://localhost:8081/api/Reviews/UserReviews/${userId}`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-        } else {
-          response = await axios.get('http://localhost:8081/api/Reviews', {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-        }
-        console.log("Полученные данные:", response.data); // Для отладки
-        setReviews(response.data);
-
-      } catch (error) {
-        if (error.response && error.response.status === 404) {
-          // Если отзывов нет, устанавливаем пустой массив
-          setReviews([]);
-        } else {
-          console.error("Ошибка при получении данных:", error);
-        }
-      }
-    };
-
-    fetchReviews();
-  }, [viewMode]); // Добавьте viewMode в зависимости
-
-  const handleDelete = async (id) => {
-    const token = localStorage.getItem('token');
-    try {
-      await axios.delete(`http://localhost:8081/api/Reviews/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      delReview(id); // Вызов функции удаления из родительского компонента
-    } catch (error) {
-      console.error("Ошибка при удалении отзыва:", error);
+    if (viewMode === 'my' && currentUser ) {
+      dispatch(fetchUserReviews(currentUser .id)); // Получаем отзывы текущего пользователя
+    } else {
+      dispatch(fetchReviews()); // Получаем все отзывы
     }
+  }, [dispatch, viewMode, currentUser ]);
+
+  const handleDelete = (id) => {
+    dispatch(deleteReview(id)); // Используем действие для удаления отзыва
   };
 
   const handleViewChange = (event, newView) => {
     if (newView) {
       setViewMode(newView);
-      console.log("Текущий режим просмотра:", newView);
     }
   };
 
@@ -93,8 +47,7 @@ const ReviewTable = ({ isAdmin, delReview }) => {
       </ToggleButtonGroup>
 
       <TableContainer component={Paper} style={{ backgroundColor: theme.palette.background.paper }}>
-        <Table>
-          <TableHead>
+        <Table> <TableHead>
             <TableRow>
               <TableCell>ID</TableCell>
               <TableCell>Комментарий</TableCell>
@@ -103,9 +56,7 @@ const ReviewTable = ({ isAdmin, delReview }) => {
               <TableCell>Продукт</TableCell>
               <TableCell>Пользователь</TableCell>
               {isAdmin && (
-                <>
-                  <TableCell>Удалить</TableCell>
-                </>
+                <TableCell>Удалить</TableCell>
               )}
             </TableRow>
           </TableHead>
@@ -115,24 +66,22 @@ const ReviewTable = ({ isAdmin, delReview }) => {
                 <TableRow key={review.id}>
                   <TableCell>{review.id}</TableCell>
                   <TableCell>{review.comment}</TableCell>
-                  <TableCell>{review.date}</ TableCell>
+                  <TableCell>{review.date}</TableCell>
                   <TableCell>{review.rating}</TableCell>
-                  <TableCell>{review.product.name}</TableCell>
-                  <TableCell>{review.user.username}</TableCell>
+                  <TableCell>{review.product ? review.product.name : 'Неизвестный продукт'}</TableCell>
+                  <TableCell>{review.user ? review.user.username : 'Неизвестный пользователь'}</TableCell>
                   {isAdmin && (
-                    <>
-                      <TableCell>
-                        <Button variant="contained" color="primary" onClick={() => handleDelete(review.id)}>
-                          Удалить
-                        </Button>
-                      </TableCell>
-                    </>
+                    <TableCell>
+                      <Button variant="contained" color="primary" onClick={() => handleDelete(review.id)}>
+                        Удалить
+                      </Button>
+                    </TableCell>
                   )}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={isAdmin ? 8 : 6} align="center">
+                <TableCell colSpan={isAdmin ? 7 : 5} align="center">
                   <Typography variant="h6" color="textSecondary">
                     У вас нет никаких отзывов
                   </Typography>

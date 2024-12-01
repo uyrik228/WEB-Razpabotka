@@ -4,6 +4,8 @@ import { CssBaseline, Switch, FormControlLabel } from "@mui/material";
 import AppRouter from "./Router"; // Импортируем компонент Router
 import { lightTheme, darkTheme } from "./theme";
 import "./App.css";
+import { Provider } from "react-redux";
+import store from "./redux/store";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -20,20 +22,22 @@ function App() {
   };
 
   return (
-    <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
-      <CssBaseline />
-      <div className="App">
-        <FormControlLabel
-          control={<Switch checked={isDarkMode} onChange={toggleTheme} />}
-          label="Темная тема"
-        />
-        <AppRouter 
-          isAuthenticated={isAuthenticated} 
-          handleAuth={handleAuth} 
-          currentUser={currentUser} 
-        />
-      </div>
-    </ThemeProvider>
+    <Provider store={store}>
+      <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
+        <CssBaseline />
+        <div className="App">
+          <FormControlLabel
+            control={<Switch checked={isDarkMode} onChange={toggleTheme} />}
+            label="Темная тема"
+          />
+          <AppRouter
+            isAuthenticated={isAuthenticated}
+            handleAuth={handleAuth}
+            currentUser={currentUser}
+          />
+        </div>
+      </ThemeProvider>
+    </Provider>
   );
 }
 

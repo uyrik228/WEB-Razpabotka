@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { TextField, Button, Container, Typography, Box } from "@mui/material";
-import { jwtDecode } from 'jwt-decode';
-import axios from 'axios';
+import { useDispatch } from 'react-redux';
+import { login } from '../../redux/actions/authActions';
+
 
 const users = [
   { username: "admin", password: "password" },
@@ -13,40 +14,20 @@ const users = [
 function Login({ setAuth }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-  //   const user = users.find((user) => user.username === username && user.password === password);
-  //   if (user) {
-  //     setAuth(username);
-  //     navigate("/");
-  //   } else {
-  //     alert("Неверные данные для входа");
-  //   }
-  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post('http://localhost:8081/auth/sign-in', {
-        username: username,
-        password: password
-      });
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token); // Сохраняем токен в localStorage
-        localStorage.setItem('username', username);
-        const decodedToken = jwtDecode(response.data.token);
-        const role = decodedToken.role;
-        localStorage.setItem('role', role);
-        setAuth(response.data.token); // Обновляем состояние авторизации
+    dispatch(login(username, password)).then(() => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        setAuth(token);
         navigate("/");
       } else {
         alert("Неверные данные для входа");
       }
-    } catch (error) {
-      console.error("Ошибка при авторизации:", error);
-      alert("Произошла ошибка при авторизации" + error);
-    }
+    });
   };
 
 

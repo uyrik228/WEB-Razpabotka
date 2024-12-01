@@ -1,43 +1,21 @@
-import React, { useEffect, useState } from "react";
-import axios from 'axios';
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProducts, deleteProduct, updateProduct } from '../../../redux/actions/productsActions';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
-const ProductTable = ({ isAdmin, delProduct }) => {
-  const [products, setProducts] = useState([]);
-  const [editProduct, setEditProduct] = useState(null);
+const ProductTable = ({ isAdmin }) => {
+  const dispatch = useDispatch();
+  const { products, loading, error } = useSelector((state) => state.products);
+  const [editProduct, setEditProduct] = React.useState(null);
   const theme = useTheme();
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      const token = localStorage.getItem('token');
-      try {
-        const response = await axios.get('http://localhost:8081/api/Products', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        setProducts(response.data);
-      } catch (error) {
-        console.error("Ошибка при получении данных:", error);
-      }
-    };
+    dispatch(fetchProducts());
+  }, [dispatch]);
 
-    fetchProducts();
-  }, []);
-
-  const handleDelete = async (id) => {
-    const token = localStorage.getItem('token');
-    try {
-      await axios.delete(`http://localhost:8081/api/Products/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      delProduct(id); // Вызов функции удаления из родительского компонента
-    } catch (error) {
-      console.error("Ошибка при удалении продукта:", error);
-    }
+  const handleDelete = (id) => {
+    dispatch(deleteProduct(id));
   };
 
   const handleEdit = (product) => {
@@ -49,19 +27,9 @@ const ProductTable = ({ isAdmin, delProduct }) => {
     setEditProduct((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleEditSave = async () => {
-    const token = localStorage.getItem('token');
-    try {
-      await axios.put(`http://localhost:8081/api/Products/update`, editProduct, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      setProducts((prev) => prev.map((p) => (p.id === editProduct.id ? editProduct : p)));
-      setEditProduct(null);
-    } catch (error) {
-      console.error("Ошибка при сохранении изменений:", error);
-    }
+  const handleEditSave = () => {
+    dispatch(updateProduct(editProduct));
+    setEditProduct(null);
   };
 
   return (
@@ -119,7 +87,7 @@ const ProductTable = ({ isAdmin, delProduct }) => {
               type="text"
               fullWidth
               name="description"
-              value={editProduct.description}
+              value={editProduct .description}
               onChange={handleEditChange}
             />
             <TextField

@@ -24,7 +24,6 @@ const Users = () => {
 
     return (
         <div>
-            {/* {isAdmin && <Form handleSubmit={handleSubmit} initialProduct={initialProduct} />} */}
             <UsersTable users={users} delUser={delUser} isAdmin={isAdmin} />
         </div>
     );
