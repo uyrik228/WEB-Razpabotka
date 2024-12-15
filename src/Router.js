@@ -8,35 +8,48 @@ import Navbar from "./Navbar";
 import Reviews from "./pages/Reviews/Reviews";
 import Registration from "./pages/Login/Registration";
 
+const ProtectedRoute = ({ isAuthenticated, children }) => {
+  return isAuthenticated ? children : <Navigate to="/login" />;
+};
+
 const AppRouter = ({ isAuthenticated, handleAuth }) => {
   const [currentUser, setCurrentUser] = useState('');
 
-  useEffect(() => {
-    const username = localStorage.getItem('username');
-    if (username) {
-      setCurrentUser(username);
-    }
-  }, []);
+  // useEffect(() => {
+  //   const username = localStorage.getItem('username');
+  //   if (username) {
+  //     setCurrentUser(username);
+  //   }
+  // }, []);
 
   return (
     <Router>
       <Navbar />
       <Routes>
         <Route path="/login" element={<Login setAuth={handleAuth} />} />
-        <Route path="/register" element={<Registration/>}/>
+        <Route path="/register" element={<Registration />} />
         
-        <Route path="/Products" element={<Products />} />
-        <Route path="/Users" element={<Users />} />
-        <Route path="/Reviews" element={<Reviews />} />
+        <Route path="/Products" element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <Products />
+          </ProtectedRoute>
+        } />
+        <Route path="/Users" element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <Users />
+          </ProtectedRoute>
+        } />
+        <Route path="/Reviews" element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <Reviews />
+          </ProtectedRoute>
+        } />
         <Route exact path="/" element={
-          isAuthenticated ? (
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
             <>
-              <p>Welcome, {currentUser}!</p> {/* Приветственное сообщение */}
               <Employees />
             </>
-          ) : (
-            <Navigate to="/login" />
-          )
+          </ProtectedRoute>
         } />
       </Routes>
     </Router>

@@ -3,21 +3,25 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchReviews, fetchUserReviews, deleteReview } from '../../../redux/actions/reviewsActions'; // Импортируем действия
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { jwtDecode } from "jwt-decode";
 
 const ReviewTable = ({ isAdmin }) => {
   const dispatch = useDispatch();
   const { reviews, loading, error } = useSelector((state) => state.reviews);
-  const { currentUser  } = useSelector((state) => state.auth); // Предполагаем, что ID пользователя хранится здесь
+  const { currentUser  } = useSelector((state) => state.auth); 
+  const token = localStorage.getItem('token')
+  const  userId  = jwtDecode(token).id;
   const [viewMode, setViewMode] = useState('all'); // 'all' или 'my'
   const theme = useTheme();
 
   useEffect(() => {
-    if (viewMode === 'my' && currentUser ) {
-      dispatch(fetchUserReviews(currentUser .id)); // Получаем отзывы текущего пользователя
+    if (viewMode === 'my' ) {
+      dispatch(fetchUserReviews(userId)); // Получаем отзывы текущего пользователя
     } else {
       dispatch(fetchReviews()); // Получаем все отзывы
     }
   }, [dispatch, viewMode, currentUser ]);
+  
 
   const handleDelete = (id) => {
     dispatch(deleteReview(id)); // Используем действие для удаления отзыва

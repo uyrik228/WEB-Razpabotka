@@ -19,6 +19,7 @@ export const login = (username, password) => async (dispatch) => {
       dispatch({ type: LOGIN_FAILURE, payload: 'Неверные данные для входа' });
     }
   } catch (error) {
+    //localStorage.removeItem('token');
     dispatch({ type: LOGIN_FAILURE, payload: error.message });
   }
 };

@@ -1,15 +1,10 @@
 // src/redux/actions/reviewActions.js
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 
 export const fetchReviews = () => async (dispatch) => {
   dispatch({ type: 'FETCH_REVIEWS_REQUEST' });
   try {
-    const token = localStorage.getItem('token');
-    const response = await axios.get('http://localhost:8081/api/Reviews', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
+    const response = await axiosInstance.get('/Reviews');
     dispatch({ type: 'FETCH_REVIEWS_SUCCESS', payload: response.data });
   } catch (error) {
     dispatch({ type: 'FETCH_REVIEWS_FAILURE', payload: error.message });
@@ -17,29 +12,18 @@ export const fetchReviews = () => async (dispatch) => {
 };
 
 export const fetchUserReviews = (userId) => async (dispatch) => {
-    dispatch({ type: 'FETCH_USER_REVIEWS_REQUEST' });
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:8081/api/UserReviews/${userId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      dispatch({ type: 'FETCH_USER_REVIEWS_SUCCESS', payload: response.data });
-    } catch (error) {
-      dispatch({ type: 'FETCH_USER_REVIEWS_FAILURE', payload: error.message });
-    }
-  };
-  
+  dispatch({ type: 'FETCH_USER_REVIEWS_REQUEST' });
+  try {
+    const response = await axiosInstance.get(`/Reviews/UserReviews/${userId}`);
+    dispatch({ type: 'FETCH_USER_REVIEWS_SUCCESS', payload: response.data });
+  } catch (error) {
+    dispatch({ type: 'FETCH_USER_REVIEWS_FAILURE', payload: error.message });
+  }
+};
 
 export const addReview = (reviewData) => async (dispatch) => {
   try {
-    const token = localStorage.getItem('token');
-    const response = await axios.post('http://localhost:8081/api/Reviews/create', reviewData, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
+    const response = await axiosInstance.post('/Reviews/create', reviewData);
     dispatch({ type: 'ADD_REVIEW', payload: response.data });
   } catch (error) {
     console.error('Ошибка при добавлении отзыва:', error);
@@ -48,12 +32,7 @@ export const addReview = (reviewData) => async (dispatch) => {
 
 export const deleteReview = (id) => async (dispatch) => {
   try {
-    const token = localStorage.getItem('token');
-    await axios.delete(`http://localhost:8081/api/Reviews/${id}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
+    await axiosInstance.delete(`/Reviews/${id}`);
     dispatch({ type: 'DELETE_REVIEW', payload: id });
   } catch (error) {
     console.error('Ошибка при удалении отзыва:', error);
