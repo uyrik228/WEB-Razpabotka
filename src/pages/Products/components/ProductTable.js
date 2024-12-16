@@ -1,14 +1,15 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProducts, deleteProduct, updateProduct } from '../../../redux/actions/productsActions';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
 
 const ProductTable = ({ isAdmin }) => {
   const dispatch = useDispatch();
   const { products, loading, error } = useSelector((state) => state.products);
   const [editProduct, setEditProduct] = React.useState(null);
-  const [errors, setErrors] = React.useState({});
   const theme = useTheme();
 
   useEffect(() => {
@@ -23,44 +24,17 @@ const ProductTable = ({ isAdmin }) => {
     setEditProduct(product);
   };
 
-  const handleEditChange = (e) => {
-    const { name, value } = e.target;
-    setEditProduct((prev) => ({ ...prev, [name]: value }));
-    
-    // Сброс ошибок при изменении значения
-    setErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
-  };
-
-  const validate = () => {
-    const newErrors = {};
-    if (!editProduct.name) {
-      newErrors.name = "Название продукта обязательно для заполнения";
-    }
-    if (!editProduct.description) {
-      newErrors.description = "Описание продукта обязательно для заполнения";
-    }
-    if (!editProduct.price) {
-      newErrors.price = "Цена продукта обязательна для заполнения";
-    } else if (editProduct.price <= 0) {
-      newErrors.price = "Цена должна быть положительным числом";
-    }
-    if (!editProduct.quantity) {
-      newErrors.quantity = "Количество продукта обязательно для заполнения";
-    } else if (editProduct.quantity <= 0) {
-      newErrors.quantity = "Количество должно быть положительным целым числом";
-    }
-    return newErrors;
-  };
-
-  const handleEditSave = () => {
-    const validationErrors = validate();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-    dispatch(updateProduct(editProduct));
+  const handleEditSave = (values) => {
+    dispatch(updateProduct(values));
     setEditProduct(null);
   };
+
+  const validationSchema = Yup.object({
+    name: Yup.string().required('Название продукта обязательно для заполнения'),
+    description: Yup.string().required('Описание продукта обязательно для заполнения'),
+    price: Yup.number().required('Цена продукта обязательна для заполнения').positive('Цена должна быть положительным числом'),
+    quantity: Yup.number().required('Количество продукта обязательно для заполнения').positive('Количество должно быть положительным целым числом')
+  });
 
   return (
     <TableContainer component={Paper} style={{ backgroundColor: theme.palette.background.paper }}>
@@ -111,59 +85,73 @@ const ProductTable = ({ isAdmin }) => {
         <Dialog open={Boolean(editProduct)} onClose={() => setEditProduct(null)}>
           <DialogTitle>Редактировать продукт</DialogTitle>
           <DialogContent>
-            <TextField
-              margin="dense"
-              label="Описание"
-              type="text"
-              fullWidth
-              name="description"
-              value={editProduct .description}
-              onChange={handleEditChange}
-              error={!!errors.description}
-              helperText={errors.description}
-            />
-            <TextField
-              margin="dense"
-              label="Товар"
-              type="text"
-              fullWidth
-              name="name"
-              value={editProduct.name}
-              onChange={handleEditChange}
-              error={!!errors.name}
-              helperText={errors.name}
-            />
-            <TextField
-              margin="dense"
-              label="Цена"
-              type="number"
-              fullWidth
-              name="price"
-              value={editProduct.price}
-              onChange={handleEditChange}
-              error={!!errors.price}
-              helperText={errors.price}
-            />
-            <TextField
-              margin="dense"
-              label="Количество"
-              type="number"
-              fullWidth
-              name="quantity"
-              value={editProduct.quantity}
-              onChange={handleEditChange}
-              error={!!errors.quantity}
-              helperText={errors.quantity}
-            />
+            <Formik
+              initialValues={editProduct}
+              validationSchema={validationSchema}
+              onSubmit={handleEditSave}
+            >
+              {({ values, handleChange, errors }) => (
+                <Form>
+                  <Field
+                    as={TextField}
+                    margin="dense"
+                    label="Описание"
+                    type="text"
+                    fullWidth
+                    name="description"
+                    value={values.description}
+                    onChange={handleChange}
+                    error={!!errors.description}
+                    helperText={<ErrorMessage name="description" />}
+                  />
+                  <Field
+                    as={TextField}
+                    margin="dense"
+                    label="Товар"
+                    type="text"
+                    fullWidth
+                    name="name"
+                    value={values.name}
+                    onChange={handleChange}
+                    error={!!errors.name}
+                    helperText={<ErrorMessage name="name" />}
+                  />
+                  <Field
+                    as={TextField}
+                    margin="dense"
+                    label="Цена"
+                    type="number"
+                    fullWidth
+                    name="price"
+                    value={values.price}
+                    onChange={handleChange}
+                    error={!!errors.price}
+                    helperText={<ErrorMessage name="price" />}
+                  />
+                  <Field
+                    as={TextField}
+                    margin="dense"
+                    label="Количество"
+                    type="number"
+                    fullWidth
+                    name="quantity"
+                    value={values.quantity}
+                    onChange={handleChange}
+                    error={!!errors.quantity}
+                    helperText={<ErrorMessage name="quantity" />}
+                  />
+                  <DialogActions>
+                    <Button onClick={() => setEditProduct(null)} color="primary">
+                      Отмена
+                    </Button>
+                    <Button type="submit" color="primary">
+                      Сохранить
+                    </Button>
+                  </DialogActions>
+                </Form>
+              )}
+            </Formik>
           </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setEditProduct(null)} color="primary">
-              Отмена
-            </Button>
-            <Button onClick={handleEditSave} color="primary">
-              Сохранить
-            </Button>
-          </DialogActions>
         </Dialog>
       )}
     </TableContainer>
