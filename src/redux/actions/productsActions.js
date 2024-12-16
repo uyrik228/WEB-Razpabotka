@@ -1,5 +1,6 @@
 // src/redux/actions/productActions.js
 import axiosInstance from '../../api/axiosInstance';
+import { createAsyncThunk } from '@reduxjs/toolkit';
 
 export const FETCH_PRODUCTS_REQUEST = 'FETCH_PRODUCTS_REQUEST';
 export const FETCH_PRODUCTS_SUCCESS = 'FETCH_PRODUCTS_SUCCESS';
@@ -18,14 +19,18 @@ export const fetchProducts = () => async (dispatch) => {
   }
 };
 
-export const addProduct = (product) => async (dispatch) => {
-  try {
-    const response = await axiosInstance.post('/Products/create', product);
-    dispatch({ type: ADD_PRODUCT_SUCCESS, payload: response.data });
-  } catch (error) {
-    console.error('Ошибка при добавлении продукта:', error);
-  }
-};
+
+export const addProduct = createAsyncThunk(
+  'products/addProduct',
+  async (product, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post('/Products/create', product);
+      return response.data;
+    } catch (error) {
+      console.error('Ошибка при добавлении продукта:', error);
+      return rejectWithValue(error.response.data);
+    }
+  });
 
 export const updateProduct = (product) => async (dispatch) => {
   try {
