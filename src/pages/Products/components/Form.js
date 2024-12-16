@@ -6,17 +6,47 @@ import { addProduct } from '../../../redux/actions/productsActions';
 
 const ProductForm = ({ initialProduct }) => {
   const [product, setProduct] = useState(initialProduct);
+  const [errors, setErrors] = useState({});
   const theme = useTheme();
   const dispatch = useDispatch();
 
   const handleChange = (event) => {
     const { name, value } = event.target;
     setProduct({ ...product, [name]: value });
+    
+    // Сброс ошибок при изменении значения
+    setErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!product.name) {
+      newErrors.name = "Название продукта обязательно для заполнения";
+    }
+    if (!product.description) {
+      newErrors.description = "Описание продукта обязательно для заполнения";
+    }
+    if (!product.price) {
+      newErrors.price = "Цена продукта обязательна для заполнения";
+    } else if (product.price <= 0) {
+      newErrors.price = "Цена должна быть положительным числом";
+    }
+    if (!product.quantity) {
+      newErrors.quantity = "Количество продукта обязательно для заполнения";
+    } else if (product.quantity <= 0) {
+      newErrors.quantity = "Количество должно быть положительным целым числом";
+    }
+    return newErrors;
   };
 
   const onSubmit = async (event) => {
     event.preventDefault();
- try {
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+    try {
       await dispatch(addProduct(product));
       setProduct(initialProduct);
     } catch (error) {
@@ -39,6 +69,8 @@ const ProductForm = ({ initialProduct }) => {
         required
         variant="outlined"
         size="small"
+        error={!!errors.name}
+        helperText={errors.name}
       />
       <TextField
         label="Описание"
@@ -49,6 +81,8 @@ const ProductForm = ({ initialProduct }) => {
         required
         variant="outlined"
         size="small"
+        error={!!errors.description}
+        helperText={errors.description}
       />
       <TextField
         label="Цена"
@@ -59,6 +93,8 @@ const ProductForm = ({ initialProduct }) => {
         required
         variant="outlined"
         size="small"
+        error={!!errors.price}
+        helperText={errors.price}
       />
       <TextField
         label="Количество"
@@ -69,6 +105,8 @@ const ProductForm = ({ initialProduct }) => {
         required
         variant="outlined"
         size="small"
+        error={!!errors.quantity}
+        helperText={errors.quantity}
       />
       <Button type="submit" variant="contained" color="primary">
         Добавить

@@ -10,6 +10,7 @@ const ReviewForm = ({ handleSubmit }) => {
   const [selectedProduct, setSelectedProduct] = useState('');
   const [comment, setComment] = useState('');
   const [rating, setRating] = useState(1);
+  const [errors, setErrors] = useState({});
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -32,19 +33,42 @@ const ReviewForm = ({ handleSubmit }) => {
 
   const handleProductChange = (event) => {
     setSelectedProduct(event.target.value);
+    setErrors((prevErrors) => ({ ...prevErrors, product: '' })); // Сброс ошибки при изменении
   };
 
   const handleCommentChange = (event) => {
     setComment(event.target.value);
+    setErrors((prevErrors) => ({ ...prevErrors, comment: '' })); // Сброс ошибки при изменении
   };
 
   const handleRatingChange = (event) => {
     setRating(event.target.value);
+    setErrors((prevErrors) => ({ ...prevErrors, rating: '' })); // Сброс ошибки при изменении
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!selectedProduct) {
+      newErrors.product = "Продукт обязателен для выбора";
+    }
+    if (!comment) {
+      newErrors.comment = "Комментарий обязателен для заполнения";
+    }
+    if (rating < 1 || rating > 10) {
+      newErrors.rating = "Рейтинг должен быть от 1 до 10";
+    }
+    return newErrors;
   };
 
   const onSubmit = async (event) => {
     event.preventDefault();
     const token = localStorage.getItem('token');
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
     try {
       if (!token) {
         console.error('Пользователь не авторизован');
@@ -85,7 +109,7 @@ const ReviewForm = ({ handleSubmit }) => {
     <Box component="form" onSubmit={onSubmit} sx={{ marginTop: 2 }}>
       <Grid container spacing={2} alignItems="center">
         <Grid item xs={4}>
-          <FormControl fullWidth variant="outlined" size="small" required>
+          <FormControl fullWidth variant="outlined" size="small" required error={!!errors.product}>
             <InputLabel>Продукт</InputLabel>
             <Select
               value={selectedProduct}
@@ -98,6 +122,7 @@ const ReviewForm = ({ handleSubmit }) => {
                 </MenuItem>
               ))}
             </Select>
+            {errors.product && <p style={{ color: 'red' }}>{errors.product}</p>}
           </FormControl>
         </Grid>
         <Grid item xs={4}>
@@ -110,6 +135,8 @@ const ReviewForm = ({ handleSubmit }) => {
             variant="outlined"
             size="small"
             multiline
+            error={!!errors.comment}
+            helperText={errors.comment}
           />
         </Grid>
         <Grid item xs={2}>
@@ -121,6 +148,8 @@ const ReviewForm = ({ handleSubmit }) => {
             required
             size="small"
             inputProps={{ min: 1, max: 10 }}
+            error={!!errors.rating}
+            helperText={errors.rating}
           />
         </Grid>
         <Grid item xs={2}>

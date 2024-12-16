@@ -8,6 +8,7 @@ const ProductTable = ({ isAdmin }) => {
   const dispatch = useDispatch();
   const { products, loading, error } = useSelector((state) => state.products);
   const [editProduct, setEditProduct] = React.useState(null);
+  const [errors, setErrors] = React.useState({});
   const theme = useTheme();
 
   useEffect(() => {
@@ -25,9 +26,38 @@ const ProductTable = ({ isAdmin }) => {
   const handleEditChange = (e) => {
     const { name, value } = e.target;
     setEditProduct((prev) => ({ ...prev, [name]: value }));
+    
+    // Сброс ошибок при изменении значения
+    setErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!editProduct.name) {
+      newErrors.name = "Название продукта обязательно для заполнения";
+    }
+    if (!editProduct.description) {
+      newErrors.description = "Описание продукта обязательно для заполнения";
+    }
+    if (!editProduct.price) {
+      newErrors.price = "Цена продукта обязательна для заполнения";
+    } else if (editProduct.price <= 0) {
+      newErrors.price = "Цена должна быть положительным числом";
+    }
+    if (!editProduct.quantity) {
+      newErrors.quantity = "Количество продукта обязательно для заполнения";
+    } else if (editProduct.quantity <= 0) {
+      newErrors.quantity = "Количество должно быть положительным целым числом";
+    }
+    return newErrors;
   };
 
   const handleEditSave = () => {
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
     dispatch(updateProduct(editProduct));
     setEditProduct(null);
   };
@@ -89,6 +119,8 @@ const ProductTable = ({ isAdmin }) => {
               name="description"
               value={editProduct .description}
               onChange={handleEditChange}
+              error={!!errors.description}
+              helperText={errors.description}
             />
             <TextField
               margin="dense"
@@ -98,6 +130,8 @@ const ProductTable = ({ isAdmin }) => {
               name="name"
               value={editProduct.name}
               onChange={handleEditChange}
+              error={!!errors.name}
+              helperText={errors.name}
             />
             <TextField
               margin="dense"
@@ -107,6 +141,8 @@ const ProductTable = ({ isAdmin }) => {
               name="price"
               value={editProduct.price}
               onChange={handleEditChange}
+              error={!!errors.price}
+              helperText={errors.price}
             />
             <TextField
               margin="dense"
@@ -116,6 +152,8 @@ const ProductTable = ({ isAdmin }) => {
               name="quantity"
               value={editProduct.quantity}
               onChange={handleEditChange}
+              error={!!errors.quantity}
+              helperText={errors.quantity}
             />
           </DialogContent>
           <DialogActions>
